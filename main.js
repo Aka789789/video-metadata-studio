@@ -16,11 +16,18 @@ function humanizeError(msg) {
   if (lower.includes('authentication token is correct')) {
     return '更新检查失败，请稍后重试。';
   }
+  if (lower.includes('err_timed_out') || lower.includes('timed out')) {
+    return '更新检查超时（网络不稳定或无法访问 GitHub）。请稍后重试。';
+  }
   if (s.includes('ENOSPC') || s.includes('No space left')) return '磁盘空间不足，请清理磁盘后重试。';
   if (s.includes('EACCES') || s.includes('EPERM')) return '没有写入权限，请更换导出目录或以管理员权限重试。';
   if (s.includes('ENOENT')) return '文件或目录不存在，请检查路径。';
   if (s.length > 800) return `${s.slice(0, 800)}…`;
   return s;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 let mainWindow = null;
@@ -127,7 +134,17 @@ ipcMain.handle('update:check', async () => {
     await autoUpdater.checkForUpdates();
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: humanizeError(e && e.message ? e.message : String(e)) };
+    const raw = e && e.message ? e.message : String(e);
+    if (String(raw).toLowerCase().includes('err_timed_out')) {
+      try {
+        await sleep(1200);
+        await autoUpdater.checkForUpdates();
+        return { ok: true };
+      } catch (e2) {
+        return { ok: false, error: humanizeError(e2 && e2.message ? e2.message : String(e2)) };
+      }
+    }
+    return { ok: false, error: humanizeError(raw) };
   }
 });
 
