@@ -46,6 +46,18 @@ jobs:
             release/latest*.yml
           if-no-files-found: warn
 
+      - name: Attach mac assets to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/*.dmg
+            release/*.zip
+            release/*.blockmap
+            release/latest*.yml
+          fail_on_unmatched_files: false
+          tag_name: ${{ github.event.release.tag_name }}
+
   build-win:
     runs-on: windows-latest
     timeout-minutes: 45
@@ -77,3 +89,14 @@ jobs:
             release/*.yml
             release/*.blockmap
           if-no-files-found: warn
+
+      - name: Attach windows assets to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/*.exe
+            release/*.yml
+            release/*.blockmap
+          fail_on_unmatched_files: false
+          tag_name: ${{ github.event.release.tag_name }}
