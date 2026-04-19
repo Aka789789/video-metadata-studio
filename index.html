@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>视频元数据处理</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <div class="header-title-row">
+          <h1>视频元数据处理</h1>
+          <div class="row btn-row header-update-actions">
+            <button type="button" class="btn ghost btn-sm" id="btnCheckUpdate">检查更新</button>
+            <button type="button" class="btn secondary btn-sm" id="btnInstallUpdate" hidden>重启安装更新</button>
+          </div>
+        </div>
+        <p class="subtitle"></p>
+      </header>
+
+      <section class="card">
+        <h2>原视频</h2>
+        <div class="dropzone" id="dropzone">
+          <p>拖拽<strong>视频文件或文件夹</strong>到此处；可点「清空列表」重置。</p>
+          <div class="row btn-row">
+            <button type="button" class="btn secondary" id="btnPickVideo">选择文件…</button>
+            <button type="button" class="btn secondary" id="btnPickInputFolder">添加整个文件夹…</button>
+            <button type="button" class="btn ghost" id="btnClearInputs">清空列表</button>
+          </div>
+        </div>
+        <div class="file-list-toolbar" id="fileListToolbar" hidden>
+          <span class="file-list-count" id="fileListSummary"></span>
+          <button
+            type="button"
+            class="btn secondary btn-sm"
+            id="btnToggleFileList"
+            hidden
+            aria-controls="fileList"
+            aria-expanded="false"
+          >
+            展开全部
+          </button>
+        </div>
+        <div class="file-list-wrap file-list-wrap--empty" id="fileListWrap">
+          <ul class="file-list" id="fileList"></ul>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>导出目录</h2>
+        <div class="row">
+          <input type="text" class="input flex" id="outDir" readonly placeholder="未选择" />
+          <button type="button" class="btn secondary" id="btnPickDir">选择文件夹…</button>
+        </div>
+      </section>
+
+      <section class="card settings-card" aria-labelledby="settings-heading">
+        <div class="settings-card-head">
+          <h2 id="settings-heading">处理与导出设置</h2>
+          <p class="status status--hint" id="statusText"></p>
+        </div>
+        <div class="settings-groups">
+          <div class="settings-cols">
+            <div class="settings-group settings-group--compact">
+              <h3 class="settings-group-title">导出命名</h3>
+              <input type="text" class="input" id="prefix" placeholder="例如：剪辑、短视频、output" maxlength="120" />
+              <p class="preview" id="namePreview">预览：<span id="previewText">—</span></p>
+              <select class="input select" id="crfSelect">
+                <option value="14">更高（CRF 14）</option>
+                <option value="16" selected>高（CRF 16，推荐）</option>
+                <option value="18">标准（CRF 18）</option>
+                <option value="20">均衡（CRF 20）</option>
+                <option value="23">较快 / 更小（CRF 23）</option>
+              </select>
+            </div>
+
+            <div class="settings-group settings-group--compact settings-group--option">
+              <h3 class="settings-group-title">选项</h3>
+              <div class="settings-options">
+                <label class="check">
+                  <input type="checkbox" id="deleteOriginal" checked />
+                  <span>处理完成后删除原视频</span>
+                </label>
+                <p class="warn warn--compact" id="deleteWarn" hidden>警告：开启后将永久删除原始文件，请确认已备份。</p>
+
+                <label class="check">
+                  <input type="checkbox" id="forceReencode" />
+                  <span>强制重编码</span>
+                </label>
+
+                <label class="check">
+                  <input type="checkbox" id="interpolateEnable" />
+                  <span>补帧</span>
+                </label>
+                <details class="settings-advanced" id="interpolateAdvanced">
+                  <summary class="settings-advanced-summary">高级设置</summary>
+                  <div class="settings-advanced-body">
+                    <div class="row settings-inline">
+                      <label class="label settings-inline-label" for="interpolateFps">目标帧率</label>
+                      <select class="input select settings-inline-input" id="interpolateFps" disabled>
+                        <option value="60" selected>60 FPS</option>
+                        <option value="120">120 FPS</option>
+                      </select>
+                    </div>
+                  </div>
+                </details>
+
+                <label class="check">
+                  <input type="checkbox" id="contentFilterEnable" />
+                  <span>内容微扰</span>
+                </label>
+                <details class="settings-advanced" id="contentAdvanced">
+                  <summary class="settings-advanced-summary">高级设置</summary>
+                  <div class="settings-advanced-body">
+                    <div class="row settings-inline">
+                      <label class="label settings-inline-label" for="contentFilterStrength">强度</label>
+                      <select class="input select settings-inline-input" id="contentFilterStrength" disabled>
+                        <option value="low" selected>低</option>
+                        <option value="mid">中</option>
+                        <option value="high">高</option>
+                      </select>
+                    </div>
+                    <div class="row settings-inline">
+                      <label class="label settings-inline-label" for="speedJitterRange">速度微改强度范围</label>
+                      <select class="input select settings-inline-input" id="speedJitterRange" disabled>
+                        <option value="0.99-1.01">轻微（0.99x ~ 1.01x）</option>
+                        <option value="0.98-1.02" selected>标准（0.98x ~ 1.02x）</option>
+                        <option value="0.97-1.03">增强（0.97x ~ 1.03x）</option>
+                      </select>
+                    </div>
+                  </div>
+                </details>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-group settings-group--actions">
+            <div class="settings-progress-row" aria-live="polite">
+              <div class="progress-stack">
+                <div class="settings-actions-log">
+                  <p class="log-label">当前阶段</p>
+                  <p class="log" id="logLine"></p>
+                </div>
+                <div class="progress-wrap progress-wrap--head">
+                  <div class="progress-bar" id="progressBar"></div>
+                </div>
+              </div>
+              <button type="button" class="btn primary settings-start-btn" id="btnStart">开始处理</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span id="footerText">macOS 12.0+ / Windows 10.0+ · 本地处理不上传</span>
+        <span class="footer-sep" aria-hidden="true">·</span>
+        <span id="appVersion">v--</span>
+      </footer>
+    </div>
+    <script src="renderer.js"></script>
+  </body>
+</html>

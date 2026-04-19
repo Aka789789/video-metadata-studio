@@ -1,0 +1,81 @@
+{
+  "name": "video-metadata-studio",
+  "version": "1.0.0",
+  "description": "跨平台视频元数据处理工具（1080×1920、元数据、MD5、重命名）",
+  "main": "main.js",
+  "author": "Video Metadata Studio Team",
+  "license": "MIT",
+  "scripts": {
+    "start": "node scripts/start-electron.js",
+    "pack": "electron-builder --dir",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win",
+    "dist": "electron-builder --mac --win",
+    "dist:mac:universal": "electron-builder --mac --universal",
+    "release:patch": "npm version patch --no-git-tag-version && npm run dist",
+    "release:minor": "npm version minor --no-git-tag-version && npm run dist",
+    "release:major": "npm version major --no-git-tag-version && npm run dist",
+    "ci:dist:mac": "electron-builder --mac",
+    "ci:dist:win": "electron-builder --win --x64",
+    "ci:dist:mac:publish": "electron-builder --mac --publish always",
+    "ci:dist:win:publish": "electron-builder --win --x64 --publish always"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Aka789789/video-metadata-studio.git"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.3",
+    "ffmpeg-static": "^5.2.0"
+  },
+  "build": {
+    "appId": "com.videometadata.studio",
+    "productName": "视频元数据处理",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "directories": {
+      "output": "release",
+      "buildResources": "buildResources"
+    },
+    "files": [
+      "**/*",
+      "!release/**"
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "**/node_modules/ffmpeg-static/**"
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "hardenedRuntime": false,
+      "identity": null,
+      "icon": "buildResources/icon.png"
+    },
+    "win": {
+      "icon": "buildResources/icon.ico",
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "${productName}-Setup-${version}-${arch}.${ext}"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Aka789789",
+        "repo": "video-metadata-studio"
+      }
+    ]
+  }
+}

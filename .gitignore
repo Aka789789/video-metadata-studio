@@ -1,0 +1,7 @@
+node_modules/
+release/
+dist/
+*.log
+.DS_Store
+third_party_py/
+buildResources/icon.iconset/
