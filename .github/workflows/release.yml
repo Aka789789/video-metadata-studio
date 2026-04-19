@@ -18,10 +18,10 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: npm
@@ -35,7 +35,7 @@ jobs:
         run: ${{ github.event_name == 'release' && 'npm run ci:dist:mac:publish' || 'npm run ci:dist:mac' }}
 
       - name: Upload mac artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: mac-release
           retention-days: 14
@@ -63,10 +63,10 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: npm
@@ -80,7 +80,7 @@ jobs:
         run: ${{ github.event_name == 'release' && 'npm run ci:dist:win:publish' || 'npm run ci:dist:win' }}
 
       - name: Upload windows artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: win-release
           retention-days: 14
