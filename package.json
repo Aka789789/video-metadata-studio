@@ -37,7 +37,7 @@
     "appId": "com.videometadata.studio",
     "productName": "视频元数据处理",
     "copyright": "Copyright © 2026 Video Metadata Studio Team",
-    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "artifactName": "video-metadata-studio-${version}-${os}-${arch}.${ext}",
     "directories": {
       "output": "release",
       "buildResources": "buildResources"
@@ -68,7 +68,7 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "${productName}-Setup-${version}-${arch}.${ext}",
+      "artifactName": "video-metadata-studio-setup-${version}-${arch}.${ext}",
       "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
       "shortcutName": "视频元数据处理"
