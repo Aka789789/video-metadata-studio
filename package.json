@@ -1,6 +1,6 @@
 {
   "name": "video-metadata-studio",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "跨平台视频元数据处理工具（1080×1920、元数据、MD5、重命名）",
   "main": "main.js",
   "author": "Video Metadata Studio Team",
@@ -15,6 +15,7 @@
     "release:patch": "npm version patch --no-git-tag-version && npm run dist",
     "release:minor": "npm version minor --no-git-tag-version && npm run dist",
     "release:major": "npm version major --no-git-tag-version && npm run dist",
+    "release:auto": "bash scripts/release-all.sh",
     "ci:dist:mac": "electron-builder --mac",
     "ci:dist:win": "electron-builder --win --x64",
     "ci:dist:mac:publish": "electron-builder --mac --publish always",
@@ -55,11 +56,9 @@
         "zip"
       ],
       "hardenedRuntime": false,
-      "identity": null,
-      "icon": "buildResources/icon.png"
+      "identity": null
     },
     "win": {
-      "icon": "buildResources/icon.ico",
       "target": [
         "nsis",
         "portable"
