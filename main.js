@@ -9,6 +9,13 @@ const { collectVideosFromDir, expandInputPaths } = require('./lib/scanInputVideo
 function humanizeError(msg) {
   if (!msg) return '未知错误';
   const s = String(msg);
+  const lower = s.toLowerCase();
+  if (lower.includes('latest-mac.yml') || (lower.includes('/releases/download/') && lower.includes('404'))) {
+    return '更新文件缺失，请稍后重试或联系管理员重新发布版本。';
+  }
+  if (lower.includes('authentication token is correct')) {
+    return '更新检查失败，请稍后重试。';
+  }
   if (s.includes('ENOSPC') || s.includes('No space left')) return '磁盘空间不足，请清理磁盘后重试。';
   if (s.includes('EACCES') || s.includes('EPERM')) return '没有写入权限，请更换导出目录或以管理员权限重试。';
   if (s.includes('ENOENT')) return '文件或目录不存在，请检查路径。';
