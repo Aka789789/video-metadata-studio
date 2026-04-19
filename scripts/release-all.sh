@@ -6,11 +6,12 @@ usage() {
 One-command release script.
 
 Usage:
-  bash scripts/release-all.sh [patch|minor|major] [--yes]
+  bash scripts/release-all.sh [patch|minor|major] [--yes] [--no-wait]
 
 Examples:
   bash scripts/release-all.sh patch
   bash scripts/release-all.sh minor --yes
+  bash scripts/release-all.sh patch --yes --no-wait
 
 What it does:
   1) Ensure git working tree is clean
@@ -26,6 +27,23 @@ EOF
 
 RELEASE_TYPE="patch"
 ASSUME_YES="false"
+NO_WAIT="false"
+
+normalize_release_url() {
+  local raw="$1"
+  local expected="https://github.com/${REPO_SLUG}/releases/tag/${TAG}"
+  if [ -z "$raw" ]; then
+    printf '%s\n' "$expected"
+    return
+  fi
+  local first
+  first="$(printf '%s\n' "$raw" | sed -n '1p')"
+  if printf '%s' "$first" | grep -q '/releases/tag/'; then
+    printf '%s\n' "$first"
+    return
+  fi
+  printf '%s\n' "$expected"
+}
 
 for arg in "$@"; do
   case "$arg" in
@@ -34,6 +52,9 @@ for arg in "$@"; do
       ;;
     --yes|-y)
       ASSUME_YES="true"
+      ;;
+    --no-wait)
+      NO_WAIT="true"
       ;;
     --help|-h)
       usage
@@ -173,8 +194,17 @@ else
 fi
 
 if [ -z "$TOKEN" ]; then
+  RELEASE_HTML_URL="$(normalize_release_url "$RELEASE_HTML_URL")"
   echo "GH_TOKEN/GITHUB_TOKEN not found, skipping Actions wait and assets listing."
   echo "Release URL: ${RELEASE_HTML_URL:-"(open Releases page manually)"}"
+  echo "Done. Version ${NEW_VERSION} released."
+  exit 0
+fi
+
+if [ "$NO_WAIT" = "true" ]; then
+  RELEASE_HTML_URL="$(normalize_release_url "$RELEASE_HTML_URL")"
+  echo "Skipping Actions wait (--no-wait enabled)."
+  echo "Release URL: ${RELEASE_HTML_URL}"
   echo "Done. Version ${NEW_VERSION} released."
   exit 0
 fi
@@ -235,12 +265,32 @@ curl -sS -o /tmp/release_final.json \
   -H "Accept: application/vnd.github+json" \
   "$CHECK_URL" >/dev/null
 
+RELEASE_HTML_URL="$(normalize_release_url "$RELEASE_HTML_URL")"
+ASSET_WAIT_POLLS=8
+ASSET_WAIT_SECONDS=15
+HAS_LATEST_MAC="false"
+
+for ((j=1; j<=ASSET_WAIT_POLLS; j++)); do
+  if node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync('/tmp/release_final.json','utf8'));const assets=(j.assets||[]).map(a=>a.name);process.exit(assets.includes('latest-mac.yml')?0:1);" ; then
+    HAS_LATEST_MAC="true"
+    break
+  fi
+  if [ "$j" -lt "$ASSET_WAIT_POLLS" ]; then
+    echo "Release assets still syncing (${j}/${ASSET_WAIT_POLLS}), waiting..."
+    sleep "$ASSET_WAIT_SECONDS"
+    curl -sS -o /tmp/release_final.json \
+      -H "Authorization: Bearer ${TOKEN}" \
+      -H "Accept: application/vnd.github+json" \
+      "$CHECK_URL" >/dev/null
+  fi
+done
+
 echo "Actions succeeded."
-echo "Release URL: ${RELEASE_HTML_URL:-$(node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync('/tmp/release_final.json','utf8'));console.log(j.html_url||'');")}"
+echo "Release URL: ${RELEASE_HTML_URL}"
 echo "Artifacts:"
 node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync('/tmp/release_final.json','utf8'));const assets=j.assets||[];if(!assets.length){console.log('- (no assets yet, refresh release page in a moment)');process.exit(0);}for(const a of assets){console.log('- '+a.name+' -> '+a.browser_download_url);}"
 
-if ! node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync('/tmp/release_final.json','utf8'));const assets=(j.assets||[]).map(a=>a.name);process.exit(assets.includes('latest-mac.yml')?0:1);" ; then
+if [ "$HAS_LATEST_MAC" != "true" ]; then
   echo "ERROR: latest-mac.yml is missing in release assets."
   echo "This version will fail update checks on macOS."
   echo "Please re-run the Build And Release workflow and verify the mac publish step."
