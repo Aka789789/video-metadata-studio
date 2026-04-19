@@ -52,7 +52,6 @@
     ],
     "mac": {
       "category": "public.app-category.utilities",
-      "icon": "buildResources/icon.png",
       "target": [
         "dmg",
         "zip"
@@ -61,7 +60,6 @@
       "identity": null
     },
     "win": {
-      "icon": "buildResources/icon.ico",
       "target": [
         "nsis",
         "portable"
