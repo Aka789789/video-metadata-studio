@@ -1,6 +1,6 @@
 {
   "name": "video-metadata-studio",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "跨平台视频元数据处理工具（1080×1920、元数据、MD5、重命名）",
   "main": "main.js",
   "author": "Video Metadata Studio Team",
