@@ -56,7 +56,7 @@ npm run dist
 项目已内置一键发布脚本：
 
 ```bash
-bash scripts/release-all.sh [patch|minor|major] [--yes]
+bash scripts/release-all.sh [patch|minor|major] [--yes] [--no-wait]
 ```
 
 脚本会执行以下步骤：
@@ -70,9 +70,18 @@ bash scripts/release-all.sh [patch|minor|major] [--yes]
 7. 轮询 `Build And Release` 工作流并输出产物链接
 8. 校验 Release 中是否包含 `latest-mac.yml`（缺失则失败）
 
+可选参数：
+
+- `--no-wait`：创建 Release 后立即返回，不等待 CI 构建完成
+
 ## 自动更新说明（重要）
 
-应用通过 `electron-updater` 从 GitHub Release 拉取更新信息。  
+应用通过 `electron-updater` 从 GitHub Release 拉取更新信息，支持以下流程：
+
+1. 点击“检查更新”
+2. 发现新版本后点击“下载更新”
+3. 下载完成后点击“重启安装更新”
+
 macOS 客户端检查更新时依赖 `latest-mac.yml`，该文件必须存在于对应版本的 Release Assets 中。
 
 若发布后点击“检查更新”报错（如 `Cannot find latest-mac.yml`）：

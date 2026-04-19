@@ -19,6 +19,7 @@ function humanizeError(msg) {
 let mainWindow = null;
 let activeController = null;
 let updateInitialized = false;
+let updateDownloaded = false;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -57,10 +58,11 @@ function setupAutoUpdater() {
     sendToRenderer('update:status', { type: 'checking', message: '正在检查更新…' });
   });
   autoUpdater.on('update-available', (info) => {
+    updateDownloaded = false;
     sendToRenderer('update:status', {
       type: 'available',
       version: info && info.version ? String(info.version) : '',
-      message: '发现新版本，可选择下载并安装。'
+      message: '发现新版本，可下载后安装。'
     });
   });
   autoUpdater.on('update-not-available', () => {
@@ -73,10 +75,11 @@ function setupAutoUpdater() {
     });
   });
   autoUpdater.on('update-downloaded', (info) => {
+    updateDownloaded = true;
     sendToRenderer('update:status', {
       type: 'downloaded',
       version: info && info.version ? String(info.version) : '',
-      message: '更新已下载，重启应用后自动安装。'
+      message: '更新已下载，点击“立即重启更新”完成安装。'
     });
   });
   autoUpdater.on('error', (e) => {
@@ -90,6 +93,11 @@ function setupAutoUpdater() {
 app.whenReady().then(() => {
   createWindow();
   setupAutoUpdater();
+  if (app.isPackaged) {
+    setTimeout(() => {
+      autoUpdater.checkForUpdates().catch(() => {});
+    }, 5000);
+  }
 });
 
 app.on('window-all-closed', () => {
@@ -116,9 +124,25 @@ ipcMain.handle('update:check', async () => {
   }
 });
 
+ipcMain.handle('update:download', async () => {
+  if (!app.isPackaged) {
+    return { ok: false, error: '开发环境下不可下载更新。' };
+  }
+  try {
+    setupAutoUpdater();
+    await autoUpdater.downloadUpdate();
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: humanizeError(e && e.message ? e.message : String(e)) };
+  }
+});
+
 ipcMain.handle('update:install', async () => {
   if (!app.isPackaged) {
     return { ok: false, error: '开发环境下不可安装更新。' };
+  }
+  if (!updateDownloaded) {
+    return { ok: false, error: '更新尚未下载完成，请先下载更新。' };
   }
   try {
     autoUpdater.quitAndInstall(false, true);

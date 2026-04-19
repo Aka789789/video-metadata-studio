@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld('vmsApi', {
   openDirDialog: () => ipcRenderer.invoke('dialog:openDir'),
   showInFolder: (fullPath) => ipcRenderer.invoke('shell:showItem', fullPath),
   checkForUpdates: () => ipcRenderer.invoke('update:check'),
+  downloadUpdate: () => ipcRenderer.invoke('update:download'),
   installDownloadedUpdate: () => ipcRenderer.invoke('update:install'),
   startJob: (payload) => ipcRenderer.invoke('job:start', payload),
   cancelJob: () => ipcRenderer.invoke('job:cancel'),

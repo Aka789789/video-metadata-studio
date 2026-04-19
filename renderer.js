@@ -290,14 +290,30 @@ function bindEvents() {
     if (msg) {
       el('statusText').textContent = msg;
     }
+    const downloadBtn = el('btnDownloadUpdate');
     const installBtn = el('btnInstallUpdate');
-    if (!installBtn) return;
-    if (data && data.type === 'downloaded') {
+    if (!installBtn || !downloadBtn) return;
+    if (data && data.type === 'available') {
+      downloadBtn.hidden = false;
+      downloadBtn.disabled = false;
+      installBtn.hidden = true;
+    } else if (data && data.type === 'downloading') {
+      downloadBtn.hidden = false;
+      downloadBtn.disabled = true;
+    } else if (data && data.type === 'downloaded') {
+      downloadBtn.hidden = true;
       installBtn.hidden = false;
       installBtn.disabled = false;
     } else if (data && data.type === 'checking') {
+      downloadBtn.disabled = true;
       installBtn.disabled = true;
+    } else if (data && data.type === 'none') {
+      downloadBtn.hidden = true;
+      downloadBtn.disabled = false;
+      installBtn.hidden = true;
+      installBtn.disabled = false;
     } else if (data && data.type === 'error') {
+      downloadBtn.disabled = false;
       installBtn.disabled = false;
     }
   });
@@ -523,6 +539,13 @@ function bindEvents() {
     const r = await api.checkForUpdates();
     if (!r || !r.ok) {
       el('statusText').textContent = (r && r.error) || '检查更新失败';
+    }
+  });
+
+  el('btnDownloadUpdate').addEventListener('click', async () => {
+    const r = await api.downloadUpdate();
+    if (!r || !r.ok) {
+      el('statusText').textContent = (r && r.error) || '下载更新失败';
     }
   });
 

@@ -5,12 +5,17 @@ on:
   release:
     types: [published]
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
 jobs:
   build-mac:
     runs-on: macos-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,6 +38,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mac-release
+          retention-days: 14
           path: |
             release/*.dmg
             release/*.zip
@@ -42,6 +48,7 @@ jobs:
 
   build-win:
     runs-on: windows-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -64,6 +71,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: win-release
+          retention-days: 14
           path: |
             release/*.exe
             release/*.yml
